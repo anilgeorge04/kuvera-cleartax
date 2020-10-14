@@ -1,0 +1,8 @@
+# Local files
+*xls
+*.xlsx
+
+# Dev
+.venv/
+.vscode/
+
