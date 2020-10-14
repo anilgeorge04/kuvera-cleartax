@@ -6,3 +6,6 @@
 .venv/
 .vscode/
 
+# Tests
+regex.py
+sample.html

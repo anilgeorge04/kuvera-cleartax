@@ -90,6 +90,7 @@ def read_transactions(capital_gains_xls_file):
     fund_types = {
         'Equity': 'MF (Equity)',
         'Others': 'MF (Equity)', # Index funds are marked "Others" in Kuvera's report, for some reason
+        'Hybrid': 'MF (Equity)', # Similarly Hybrid funds are marked "Hybrid" in Kuvera's report
         'Debt': 'MF (Other than Equity)'
     }
 
@@ -105,6 +106,10 @@ def read_transactions(capital_gains_xls_file):
             elif folio_match:
                 current_folio = folio_match.group(1)
 
+            # kuvera's first row with fund name has a commented --tr 
+            # so the td value only ends at the end of file
+            # so fund name match below doesn't work right now
+
             # Extract fund name
             fund_name_match = fund_name_pattern.search(column_data)
             if fund_name_match:
@@ -113,14 +118,18 @@ def read_transactions(capital_gains_xls_file):
             for fund_type in fund_types:
                 if fund_type in column_data:
                     current_fund_type = fund_types[fund_type]
-                    break
+                    break            
+            pass
+
         elif len(columns) == 10:
             # This row contains a transaction
             txn_data = [col.string for col in columns]
             transaction = Transaction(current_fund_name, current_fund_type, current_isin, current_folio, txn_data)
+            print(transaction.fund_name)
             all_transactions.append(transaction)
         elif len(columns) == 8:
             # Summary of transactions for a fund, we can skip these rows
+            # current_fund_name, current_folio, current_isin, current_fund_type = None, None, None, None
             pass
         elif len(columns) == 3:
             # Rows with subtotal and total
@@ -176,7 +185,7 @@ def prepare(capital_gains_xls_file, cleartax_template_xlsx_file, output_xlsx_fil
     print('Calculated Sum of all LTCG across all transactions:', ltcg_sum)
     print('Total LTCG from Kuvera report:', total_ltcg)
 
-    write_capital_gains_report(all_transactions, output_xlsx_file, cleartax_template_xlsx_file)
+    # write_capital_gains_report(all_transactions, output_xlsx_file, cleartax_template_xlsx_file)
 
 if __name__ == '__main__':
     prepare(sys.argv[1], sys.argv[2], sys.argv[3])
